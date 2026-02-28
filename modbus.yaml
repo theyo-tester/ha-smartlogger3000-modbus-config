@@ -1,0 +1,429 @@
+template:
+  - sensor:
+      - name: "House Real Time Load"
+        unique_id: house_load_power
+        unit_of_measurement: "kW"
+        device_class: power
+        state: >
+          {% set inv_pwr = states('sensor.all_inverter_power_now') | float(0) %}
+          {% set grid_pwr = states('sensor.grid_tied_active_power') | float(0) %}
+          {% set batt_pwr = states('sensor.battery_charge_discharge_power') | float(0) %}
+          
+          {{ (inv_pwr - grid_pwr - batt_pwr) | round(2) }}
+
+modbus:
+  - name: "huawei_smartlogger"
+    type: tcp
+    host: 192.168.1.44
+    port: 502
+    sensors:
+      # --- GROUP A: REAL-TIME POWER (Scan: 5s) ---
+      # Crucial for dynamic load/ESS automations
+      - name: "Grid-tied Active Power"
+        unique_id: sl3000_grid_power
+        slave: 5
+        address: 32278
+        data_type: int32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "kW"
+        device_class: power
+        scan_interval: 5
+        
+      - name: "Solar Producion Now"  # smartLogger. The real solar power going in the inverters
+        unique_id: sl3000_all_production_now
+        slave: 0   # for smartLogger is always fixed to 3000
+        address: 40521
+        data_type: int32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "kW"
+        device_class: power
+        scan_interval: 5
+        
+    #   - name: "All Inverter Power Now"  # smartLogger. However, It will also show a positive value when discharging a battery, so this is not the real solar power
+    #     unique_id: sl3000_all_inv_power
+    #     slave: 0   # for smartLogger is always fixed to 3000
+    #     address: 40525
+    #     data_type: int32
+    #     scale: 0.001
+    #     precision: 2
+    #     unit_of_measurement: "kW"
+    #     device_class: power
+    #     scan_interval: 5
+      
+      - name: "Battery@Inv3 Charge/Discharge Power"
+        unique_id: sl3000_inv3_batt_chg_dischg_power
+        slave: 3
+        address: 37765
+        data_type: int32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "kW"
+        device_class: power
+        scan_interval: 5
+        
+        # --- GROUP B: GRID METRICS (Scan: 20s) ---
+      - name: "Grid A phase current"
+        unique_id: sl3000_grid_curr_a
+        slave: 5
+        address: 32272
+        data_type: int32
+        scale: 0.1
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        scan_interval: 20
+
+      - name: "Grid B Phase current"
+        unique_id: sl3000_grid_curr_b
+        slave: 5
+        address: 32274
+        data_type: int32
+        scale: 0.1
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        scan_interval: 20
+
+      - name: "Grid C Phase Current"
+        unique_id: sl3000_grid_curr_c
+        slave: 5
+        address: 32276
+        data_type: int32
+        scale: 0.1
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        scan_interval: 20
+        
+      - name: "Grid A phase voltage"
+        unique_id: sl3000_grid_volt_a
+        slave: 5
+        address: 32260
+        data_type: int32
+        scale: 0.01
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        scan_interval: 20
+      
+      - name: "Grid B phase voltage"
+        unique_id: sl3000_grid_volt_b
+        slave: 5
+        address: 32262
+        data_type: int32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        scan_interval: 20
+        
+      - name: "Grid C phase voltage"
+        unique_id: sl3000_grid_volt_c
+        slave: 5
+        address: 32264
+        data_type: int32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        scan_interval: 20
+      
+      - name: "Inv1_40k Active Power"
+        unique_id: sl3000_inv1_power
+        slave: 2
+        address: 32080
+        data_type: int32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "kW"
+        device_class: power
+        scan_interval: 20
+
+      - name: "Inv2_40k Active Power"
+        unique_id: sl3000_inv2_power
+        slave: 1
+        address: 32080
+        data_type: int32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "kW"
+        device_class: power
+        scan_interval: 20
+
+      - name: "Inv3_10k_Batt Active Power"
+        unique_id: sl3000_inv3_power
+        slave: 3
+        address: 32080
+        data_type: int32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "kW"
+        device_class: power
+        scan_interval: 20
+        
+      # --- GROUP C: ESS STATUS & SOC (Scan: 60s) ---
+      - name: "Grid-tied Reactive Power"
+        unique_id: sl3000_grid_react_power
+        slave: 5
+        address: 32280
+        data_type: int32
+        scale: 0.001
+        unit_of_measurement: "kVar"
+        device_class: power
+        scan_interval: 60
+        
+      - name: "Real-time SOC"
+        unique_id: sl3000_inv3_batt_soc
+        slave: 3
+        address: 37760
+        data_type: uint16
+        scale: 0.1
+        unit_of_measurement: "%"
+        device_class: battery
+        scan_interval: 60
+
+      - name: "ESS Battery Status"
+        unique_id: sl3000_inv3_batt_status
+        # 0: offline
+        # 1: standby
+        # 2: running
+        # 3: fault
+        # 4: sleep mode
+        slave: 3
+        address: 37000
+        data_type: uint16
+        scan_interval: 60
+        
+        # --- GROUP D: (Scan: 100s) ---
+      - name: "Plant Status"
+        unique_id: sl3000_plant_status
+        # Used by Xinjiang
+        # 0: Idle
+        # 1: On-grid
+        # 2: On-grid: self derating
+        # 3: On-grid: Power limit
+        # 4: Planned outage
+        # 5: Power limit outage
+        # 6: Fault outage
+        # 7: Communication interrup
+        slave: 0
+        address: 40566
+        data_type: uint16
+        scan_interval: 100      
+      
+      - name: "Battery@Inv3 Temperature"
+        unique_id: sl3000_inv3_batt_temp
+        slave: 3
+        address: 37022
+        data_type: uint16
+        scale: 0.1
+        unit_of_measurement: "°C"
+        device_class: temperature
+        scan_interval: 100
+        
+      - name: "Energy Yield Daily"   # SmartLogger
+        unique_id: sl3000_plant_yield_today
+        slave: 0 
+        address: 40562
+        data_type: uint32
+        scale: 0.1
+        device_class: energy
+        unit_of_measurement: "kWh"
+        scan_interval: 100
+        precision: 2
+
+      - name: "Battery@Inv3 Daily Charge"
+        unique_id: sl3000_inv3_batt_daily_chg
+        slave: 3
+        address: 37784
+        data_type: uint32
+        scale: 0.01
+        unit_of_measurement: "kWh"
+        device_class: energy
+        scan_interval: 100
+        precision: 2
+        
+      - name: "Battery@Inv3 Daily Discharge"
+        unique_id: sl3000_inv3_batt_daily_dischg
+        slave: 3
+        address: 37786
+        data_type: uint32
+        scale: 0.01
+        unit_of_measurement: "kWh"
+        device_class: energy
+        scan_interval: 100
+        precision: 2
+        
+      - name: "Battery Working Mode"
+        unique_id: sl3000_inv3_batt_work_mode
+        # 0:none
+        # 1:Forcible charge/discharge
+        # 2:Time of Use(LG)
+        # 3:Fixed charge/discharge
+        # 4:Maximise self consumption
+        # 5:Fully fed to grid
+        # 6:Time of Use(LUNA2000)
+        # 7:remote scheduling maximum selfuse
+        # 8:remote scheduling - full Internet access
+        # 9:remote scheduling - TOU
+        # 10: AI energy management and scheduling
+        slave: 3
+        address: 37006
+        data_type: uint16
+        scan_interval: 100
+        
+        # ---: DAILY YIELD PER INVERTER  ---
+      - name: "Inv1_40k Daily Yield"
+        unique_id: sl3000_inv1_yield_daily
+        slave: 2
+        address: 32114
+        data_type: uint32
+        scale: 0.01
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 100
+        precision: 2
+
+      - name: "Inv2_40k Daily Yield"
+        unique_id: sl3000_inv2_yield_daily
+        slave: 1
+        address: 32114
+        data_type: uint32
+        scale: 0.01
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 100
+        precision: 2
+
+      - name: "Inv3_10k_Batt Daily Yield"
+        unique_id: sl3000_inv3_yield_daily
+        slave: 3
+        address: 32114
+        data_type: uint32
+        scale: 0.01
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 100
+        precision: 2
+    
+        # --- GROUP E: (Scan: 300s/5Min) ---
+      - name: "Total Energy Yield"             # Negative active electricity
+        unique_id: sl3000_plant_yield_total
+        slave: 0
+        address: 40560
+        data_type: uint32
+        scale: 0.1
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        scan_interval: 300
+        precision: 1
+        
+      - name: "Total Energy Feed-in (Export)"  # Negative active electricity
+        unique_id: sl3000_plant_export_total
+        slave: 5
+        address: 32349
+        data_type: custom
+        structure: ">q"                        # Signed 64-bit(I64)- Req. 4 reg.
+        count: 4
+        scale: 0.01
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        scan_interval: 300
+        precision: 1
+        
+      - name: "Total Energy Import"            # Positive active electricity
+        unique_id: sl3000_plant_import_total
+        slave: 5
+        address: 32357
+        data_type: custom
+        structure: ">q"                        # Signed 64-bit(I64)- Req. 4 reg.
+        count: 4
+        scale: 0.01
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        scan_interval: 300
+        precision: 1
+
+      - name: "Total Battery Charge Inv3"
+        unique_id: sl3000_inv3_batt_chg_total
+        slave: 3
+        address: 37780
+        data_type: uint32
+        scale: 0.01
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        scan_interval: 300
+        precision: 1
+        
+      - name: "Total Battery Discharge Inv3"
+        unique_id: sl3000_inv3_batt_dischg_total
+        slave: 3
+        address: 37782
+        data_type: uint32
+        scale: 0.01
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        scan_interval: 300
+        precision: 1
+        
+group:
+  huawei_sl3000_real_time_power:
+    name: "Huawei Real-Time Power"
+    entities:
+      - sensor.grid_tied_active_power
+      - sensor.all_inverter_power_now
+      - sensor.battery_inv3_charge_discharge_power
+
+  huawei_sl3000_grid_metrics:
+    name: "Huawei Grid Metrics"
+    entities:
+      - sensor.grid_a_phase_current
+      - sensor.grid_b_phase_current
+      - sensor.grid_c_phase_current
+      - sensor.grid_a_phase_voltage
+      - sensor.grid_b_phase_voltage
+      - sensor.grid_c_phase_voltage
+
+  huawei_sl3000_inverter_individual_power:
+    name: "Huawei Inverter Active Power"
+    entities:
+      - sensor.inv1_40k_active_power
+      - sensor.inv2_40k_active_power
+      - sensor.inv3_10k_batt_active_power
+
+  huawei_sl3000_battery_ess_status:
+    name: "Huawei ESS & Battery Status"
+    entities:
+      - sensor.real_time_soc
+      - sensor.ess_battery_status
+      - sensor.battery_inv3_temperature
+      - sensor.battery_working_mode
+
+  huawei_sl3000_energy_yields:
+    name: "Huawei Energy Yields"
+    entities:
+      - sensor.energy_yield_daily
+      - sensor.inv1_40k_daily_yield
+      - sensor.inv2_40k_daily_yield
+      - sensor.inv3_10k_batt_daily_yield
+      - sensor.total_energy_yield
+      - sensor.battery_inv3_daily_charge
+      - sensor.battery_inv3_daily_discharge
+
+  huawei_sl3000_grid_totals:
+    name: "Huawei Grid Totals"
+    entities:
+      - sensor.total_energy_feed_in_export
+      - sensor.total_energy_import
+      - sensor.total_battery_charge_inv3
+      - sensor.total_battery_discharge_inv3
