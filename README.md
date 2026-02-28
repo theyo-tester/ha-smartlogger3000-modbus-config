@@ -1,26 +1,45 @@
-# Home Assistant Modbus Configuration fo the SmartLogger 3000
+# Home Assistant Modbus Configuration for Huawei SmartLogger 3000
 
-My selection of modbus registers compatible for the Huawei Smartlogger 3000
+This repository contains a curated selection of Modbus registers compatible with the **Huawei SmartLogger 3000**, optimized for Home Assistant.
 
-Make sure that you enable the ModbusTCP option in our SmartLogger and that you set the IP of the smartLogger to a fixed address.
+## 🛠️ Prerequisites
 
-Also change the addresing in the ModbusTCP configuration to logic addressing.
+Before implementing this configuration, ensure your SmartLogger is prepared:
 
-My setup contains three inverters at specific slave (logic) addresses and a smart meter. Also only the 10kW inverter has a battery connected to it.
+1. **Enable Modbus TCP:** Turn this option **ON** in the SmartLogger settings.
+2. **Static IP:** Assign a fixed IP address to your SmartLogger to prevent connection loss.
+3. **Address Mode:** In the Modbus TCP configuration, ensure you are using **Logical Addressing**.
 
-So first find out how many inverters you have, and what address each of them, including the meter, have.
+> [!IMPORTANT]
+> **Note on the SmartLogger ID:** > According to the official Reference Documentation: *"In the Modbus-TCP communications protocol, the logical device ID for the SmartLogger itself is fixed to **0**."*
 
-Further the Referece Doc says regarding the smartlogger itself: 
-"In the Modbus-TCP communications protocol, the logic device ID is fixed to 0."
+## 📐 System Architecture
+
+This configuration is based on my specific hardware setup. You may need to adjust the slave IDs to match your own:
+* **Three (3) Inverters** at specific logical slave addresses.
+* **One (1) Smart Meter**.
+* **One (1) Battery** (connected to the 10kW inverter).
+
+**Action Required:** You must identify the logical addresses for your specific devices (inverters, meters, etc.) and update the `slave:` values in the `modbus.yaml` file accordingly. 
+
+As you will notice, the registers for the inverters and battery data are identical to the official Huawei Modbus specifications used for direct inverter connections. The only functional difference when communicating via the SmartLogger is the **Slave ID** used to route the request to the correct downstream device.
 
 
-Useful notes: 
-- I also introduced a sensor teplate to calculate the actual Load Power because this is not directly provided by the SmartLogger
-- At the end of the file I have grouped the entities in different groups, you can get rid of them if you dont need them
-- You can include this file into your Homeassistant Config by adding this line to your configuration.yaml
+## ✨ Features & Useful Notes
 
-````
+* **Load Power Calculation:** The SmartLogger does not provide "Actual Load Power" as a direct register. I have included a **Template Sensor** in this config to calculate this value automatically.
+* **Entity Grouping:** At the end of the file, I have organized the entities into groups. If you do not use the legacy `group:` component or prefer a different organization, you can safely remove that section.
+* **Optimized Selection:** This config focuses on the most useful registers for Home Assistant dashboards and Energy Management, rather than pulling every single available data point.
+
+## 🚀 Installation
+
+To keep your `configuration.yaml` clean and modular, it is recommended to use the **Packages** feature.
+
+1. Download the `modbus.yaml` file from this repository.
+2. Put it in your Home Assistant folder, next to the `configuration.yaml`
+3. Add (or verify) the following lines in your `configuration.yaml`:
+
+```yaml
 homeassistant:
-    packages:
-        pack_modbus: !include modbus.yaml
-````
+  packages:
+    pack_modbus: !include modbus.yaml
