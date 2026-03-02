@@ -16,13 +16,13 @@ Before implementing this configuration, ensure your SmartLogger is prepared:
 ## 📐 System Architecture
 
 This configuration is based on my specific hardware setup. You may need to adjust the slave IDs to match your own:
-* **Three (3) Inverters** at specific logical slave addresses.
+* **Three (3) Inverters** at specific logical slave addresses (found in the entity names with inv1, inv2 & inv3).
 * **One (1) Smart Meter**.
-* **One (1) Battery** (connected to the 10kW inverter).
+* **One (1) Battery** (connected to the 10kW inverter, which in my case happens to be "inv3").
 
 **Action Required:** You must identify the logical addresses for your specific devices (inverters, meters, etc.) and update the `slave:` values in the `modbus.yaml` file accordingly. 
 
-As you will notice, the registers for the inverters and battery data are identical to the official Huawei Modbus specifications used for direct inverter connections. The only functional difference when communicating via the SmartLogger is the **Slave ID** used to route the request to the correct downstream device.
+As you will notice, the registers for the inverters and battery data are identical to the official Huawei Modbus specifications used for direct inverter connections. The only functional difference when communicating via the SmartLogger is the **Slave ID** used to route the request to the correct downstream device and the additional sum registers offered by the SmartLogger, like total inverter power.
 
 
 ## ✨ Features & Useful Notes
