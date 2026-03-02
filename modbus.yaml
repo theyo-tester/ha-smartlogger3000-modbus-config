@@ -31,7 +31,7 @@ modbus:
         device_class: power
         scan_interval: 5
         
-      - name: "Solar Producion Now"  # smartLogger. The real solar power going in the inverters
+      - name: "Solar Producion Now"  # smartLogger
         unique_id: sl3000_all_production_now
         slave: 0   # for smartLogger is always fixed to 3000
         address: 40521
@@ -42,7 +42,7 @@ modbus:
         device_class: power
         scan_interval: 5
         
-    #   - name: "All Inverter Power Now"  # smartLogger. However, It will also show a positive value when discharging a battery, so this is not the real solar power
+    #   - name: "All Inverter Power Now"  # smartLogger
     #     unique_id: sl3000_all_inv_power
     #     slave: 0   # for smartLogger is always fixed to 3000
     #     address: 40525
@@ -52,7 +52,7 @@ modbus:
     #     unit_of_measurement: "kW"
     #     device_class: power
     #     scan_interval: 5
-      
+    
       - name: "Battery_Inv3 Charge/Discharge Power"
         unique_id: sl3000_batt_inv3_chg_dischg_power
         slave: 3
@@ -64,7 +64,7 @@ modbus:
         device_class: power
         scan_interval: 5
         
-        # --- GROUP B: GRID METRICS (Scan: 20s) ---
+      # --- GROUP B: GRID METRICS (Scan: 20s) ---
       - name: "Grid A phase current"
         unique_id: sl3000_grid_curr_a
         slave: 5
@@ -130,7 +130,8 @@ modbus:
         unit_of_measurement: "V"
         device_class: voltage
         scan_interval: 20
-      
+
+      # Active p. is the energy going out of the inverter (either Solar or Bat.)
       - name: "Inv1_40k Active Power"
         unique_id: sl3000_inv1_power
         slave: 2
@@ -163,7 +164,7 @@ modbus:
         unit_of_measurement: "kW"
         device_class: power
         scan_interval: 20
-        
+
       # --- GROUP C: ESS STATUS & SOC (Scan: 60s) ---
       - name: "Grid-tied Reactive Power"
         unique_id: sl3000_grid_react_power
@@ -197,7 +198,7 @@ modbus:
         data_type: uint16
         scan_interval: 60
         
-        # --- GROUP D: (Scan: 100s) ---
+      # --- GROUP D: (Scan: 100s) ---
       - name: "Plant Status"
         unique_id: sl3000_plant_status
         # Used by Xinjiang
@@ -212,16 +213,6 @@ modbus:
         slave: 0
         address: 40566
         data_type: uint16
-        scan_interval: 100      
-      
-      - name: "Battery@Inv3 Temperature"
-        unique_id: sl3000_inv3_batt_temp
-        slave: 3
-        address: 37022
-        data_type: uint16
-        scale: 0.1
-        unit_of_measurement: "°C"
-        device_class: temperature
         scan_interval: 100
         
       - name: "Energy Yield Daily"   # SmartLogger
@@ -234,9 +225,29 @@ modbus:
         unit_of_measurement: "kWh"
         scan_interval: 100
         precision: 2
+      
+      - name: "Battery1_Inv3 Temperature"
+        unique_id: sl3000_batt1_inv3_temp
+        slave: 3
+        address: 37022
+        data_type: uint16
+        scale: 0.1
+        unit_of_measurement: "°C"
+        device_class: temperature
+        scan_interval: 100
 
-      - name: "Battery@Inv3 Daily Charge"
-        unique_id: sl3000_inv3_batt_daily_chg
+      - name: "Battery2_Inv3 Temperature"
+        unique_id: sl3000_batt2_inv3_temp
+        slave: 3
+        address: 37752
+        data_type: uint16
+        scale: 0.1
+        unit_of_measurement: "°C"
+        device_class: temperature
+        scan_interval: 100
+        
+      - name: "Battery_Inv3 Daily Charge"
+        unique_id: sl3000_batt_inv3_daily_chg
         slave: 3
         address: 37784
         data_type: uint32
@@ -246,8 +257,8 @@ modbus:
         scan_interval: 100
         precision: 2
         
-      - name: "Battery@Inv3 Daily Discharge"
-        unique_id: sl3000_inv3_batt_daily_dischg
+      - name: "Battery_Inv3 Daily Discharge"
+        unique_id: sl3000_batt_inv3_daily_dischg
         slave: 3
         address: 37786
         data_type: uint32
@@ -275,7 +286,7 @@ modbus:
         data_type: uint16
         scan_interval: 100
         
-        # ---: DAILY YIELD PER INVERTER  ---
+      # ---: DAILY YIELD PER INVERTER  ---
       - name: "Inv1_40k Daily Yield"
         unique_id: sl3000_inv1_yield_daily
         slave: 2
@@ -312,7 +323,7 @@ modbus:
         scan_interval: 100
         precision: 2
     
-        # --- GROUP E: (Scan: 300s/5Min) ---
+      # --- GROUP E: (Scan: 300s/5Min) ---
       - name: "Total Energy Yield"             # Negative active electricity
         unique_id: sl3000_plant_yield_total
         slave: 0
@@ -383,7 +394,7 @@ group:
     entities:
       - sensor.grid_tied_active_power
       - sensor.solar_producion_now
-      - sensor.battery_inv3_charge_discharge_powe
+      - sensor.battery_inv3_charge_discharge_power
 
   huawei_sl3000_grid_metrics:
     name: "Huawei Grid Metrics"
@@ -394,6 +405,7 @@ group:
       - sensor.grid_a_phase_voltage
       - sensor.grid_b_phase_voltage
       - sensor.grid_c_phase_voltage
+      - sensor.grid_tied_reactive_power
 
   huawei_sl3000_inverter_individual_power:
     name: "Huawei Inverter Active Power"
@@ -401,14 +413,17 @@ group:
       - sensor.inv1_40k_active_power
       - sensor.inv2_40k_active_power
       - sensor.inv3_10k_batt_active_power
-
+      
   huawei_sl3000_battery_ess_status:
     name: "Huawei ESS & Battery Status"
     entities:
       - sensor.real_time_soc
       - sensor.ess_battery_status
-      - sensor.battery_inv3_temperature
+      - sensor.battery1_inv3_temperature
+      - sensor.battery2_inv3_temperature
       - sensor.battery_working_mode
+      - sensor.battery_inv3_daily_charge
+      - sensor.battery_inv3_daily_discharge
 
   huawei_sl3000_energy_yields:
     name: "Huawei Energy Yields"
@@ -418,8 +433,6 @@ group:
       - sensor.inv2_40k_daily_yield
       - sensor.inv3_10k_batt_daily_yield
       - sensor.total_energy_yield
-      - sensor.battery_inv3_daily_charge
-      - sensor.battery_inv3_daily_discharge
 
   huawei_sl3000_grid_totals:
     name: "Huawei Grid Totals"
