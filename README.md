@@ -48,7 +48,9 @@ To manage hardware resources and network traffic, the entities are grouped by th
 
 > [!TIP]
 > At the end of the `modbus.yaml` file, I have organized these entities into legacy Home Assistant groups. If you do not use the `group:` component, you can safely remove that section.
-
+> [!NOTE]
+> **Missing something?** If you notice any important entities or registers missing from this list that would benefit the community, please feel free to contact me or open an issue!
+> 
 ## 🚀 Installation
 
 To keep your `configuration.yaml` clean and modular, it is recommended to use the **Packages** feature.
@@ -61,3 +63,9 @@ To keep your `configuration.yaml` clean and modular, it is recommended to use th
 homeassistant:
   packages:
     pack_modbus: !include modbus.yaml
+```
+
+## 📝 To-Do / Upcoming Improvements
+
+- [ ] **Write Registers:** Add support for controlling inverters directly via Modbus (e.g., limiting power production).
+- [ ] **Battery Management:** Include write registers for battery control, such as setting Maximum SOC or Discharge limits.
