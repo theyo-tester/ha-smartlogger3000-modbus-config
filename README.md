@@ -31,6 +31,24 @@ As you will notice, the registers for the inverters and battery data are identic
 * **Entity Grouping:** At the end of the file, I have organized the entities into groups. If you do not use the legacy `group:` component or prefer a different organization, you can safely remove that section.
 * **Optimized Selection:** This config focuses on the most useful registers for Home Assistant dashboards and Energy Management, rather than pulling every single available data point.
 
+### 📊 Entity Groups & Polling Intervals
+To manage hardware resources and network traffic, the entities are grouped by their function with specific scan intervals. 
+
+| Group Name | Entities | Polling Interval |
+| :--- | :--- | :--- |
+| **Huawei Real-Time Power** | `grid_tied_active_power`, `solar_producion_now`, `battery_inv3_charge_discharge_power` | 5s |
+| **Huawei Grid Metrics** | `grid_[a/b/c]_phase_current`, `grid_[a/b/c]_phase_voltage` | 20s |
+| | `grid_tied_reactive_power` | 60s |
+| **Inverter Active Power** | `inv1_40k_active_power`, `inv2_40k_active_power`, `inv3_10k_batt_active_power` | 20s |
+| **ESS & Battery Status** | `real_time_soc`, `ess_battery_status` | 60s |
+| | `battery[1/2]_inv3_temperature`, `battery_working_mode`, `battery_inv3_daily_charge/discharge` | 100s |
+| **Huawei Energy Yields** | `energy_yield_daily`, `inv1_daily_yield`, `inv2_daily_yield`, `inv3_daily_yield`, `total_energy_yield` | 100s |
+| **Huawei Grid Totals** | `total_energy_feed_in_export`, `total_energy_import`, `total_battery_charge/discharge` | 300s |
+| **Standalone Entities** | `Plant Status` | 100s |
+
+> [!TIP]
+> At the end of the `modbus.yaml` file, I have organized these entities into legacy Home Assistant groups. If you do not use the `group:` component, you can safely remove that section.
+
 ## 🚀 Installation
 
 To keep your `configuration.yaml` clean and modular, it is recommended to use the **Packages** feature.
