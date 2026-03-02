@@ -173,7 +173,7 @@ modbus:
         data_type: int32
         scale: 0.001
         unit_of_measurement: "kVar"
-        device_class: power
+        device_class: reactive_power
         scan_interval: 60
         
       - name: "Real-time SOC"
