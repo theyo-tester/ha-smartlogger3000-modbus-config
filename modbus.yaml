@@ -5,11 +5,12 @@ template:
         unit_of_measurement: "kW"
         device_class: power
         state: >
-          {% set inv_pwr = states('sensor.all_inverter_power_now') | float(0) %}
+          {% set inv_pwr = states('sensor.solar_producion_now') | float(0) %}
           {% set grid_pwr = states('sensor.grid_tied_active_power') | float(0) %}
-          {% set batt_pwr = states('sensor.battery_charge_discharge_power') | float(0) %}
-          
-          {{ (inv_pwr - grid_pwr - batt_pwr) | round(2) }}
+          {% set batt_pwr = states('sensor.battery_inv3_charge_discharge_power') | float(0) %}
+          {% set load = inv_pwr + grid_pwr - batt_pwr %}
+  
+          {{ [0, load] | max | round(2) }}
 
 modbus:
   - name: "huawei_smartlogger"
@@ -52,8 +53,8 @@ modbus:
     #     device_class: power
     #     scan_interval: 5
       
-      - name: "Battery@Inv3 Charge/Discharge Power"
-        unique_id: sl3000_inv3_batt_chg_dischg_power
+      - name: "Battery_Inv3 Charge/Discharge Power"
+        unique_id: sl3000_batt_inv3_chg_dischg_power
         slave: 3
         address: 37765
         data_type: int32
@@ -381,8 +382,8 @@ group:
     name: "Huawei Real-Time Power"
     entities:
       - sensor.grid_tied_active_power
-      - sensor.all_inverter_power_now
-      - sensor.battery_inv3_charge_discharge_power
+      - sensor.solar_producion_now
+      - sensor.battery_inv3_charge_discharge_powe
 
   huawei_sl3000_grid_metrics:
     name: "Huawei Grid Metrics"
