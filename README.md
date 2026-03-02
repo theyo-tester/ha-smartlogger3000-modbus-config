@@ -28,7 +28,6 @@ As you will notice, the registers for the inverters and battery data are identic
 ## ✨ Features & Useful Notes
 
 * **Load Power Calculation:** The SmartLogger does not provide "Actual Load Power" as a direct register. I have included a **Template Sensor** in this config to calculate this value automatically.
-* **Entity Grouping:** At the end of the file, I have organized the entities into groups. If you do not use the legacy `group:` component or prefer a different organization, you can safely remove that section.
 * **Optimized Selection:** This config focuses on the most useful registers for Home Assistant dashboards and Energy Management, rather than pulling every single available data point.
 
 ### 📊 Entity Groups & Polling Intervals
@@ -48,6 +47,7 @@ To manage hardware resources and network traffic, the entities are grouped by th
 
 > [!TIP]
 > At the end of the `modbus.yaml` file, I have organized these entities into legacy Home Assistant groups. If you do not use the `group:` component, you can safely remove that section.
+
 > [!NOTE]
 > **Missing something?** If you notice any important entities or registers missing from this list that would benefit the community, please feel free to contact me or open an issue!
 > 
